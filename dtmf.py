@@ -8,11 +8,10 @@ import pygame, pygame.sndarray
 import numpy
 
 sample_rate = 44100
-tone_ms = 200
 
 class DTMFDialer:
-  dtmf_tones_row = (1209, 1336, 1477, 1633)
-  dtmf_tones_col = (697, 770, 852, 941)
+  dtmf_tones_row = [1209, 1336, 1477, 1633]
+  dtmf_tones_col = [697, 770, 852, 941]
 
   def add_button(self, table, name, col, row):
     button_data = (name, col, row)
@@ -22,13 +21,20 @@ class DTMFDialer:
     button.show()
     table.attach(button, col, col + 1, row, row + 1, gtk.EXPAND | gtk.FILL, gtk.EXPAND | gtk.FILL, 0, 0)
 
+  def gen_dtmf_tone(self, y, x):
+    f1 = self.dtmf_tones_row[x]
+    f2 = self.dtmf_tones_col[y]
+    l1 = sample_rate / float(f1)
+    l2 = sample_rate / float(f2)
+
+    s1 = self.sine_wave(f1, 4096, int(round(l1)) * int(round(l2)))
+    s2 = self.sine_wave(f2, 4096, int(round(l1)) * int(round(l2)))
+    return pygame.sndarray.make_sound((s1 + s2) / 2)
+
   def __init__(self):
-    pygame.mixer.pre_init(sample_rate, channels = 1, buffer = 1024)
+    pygame.mixer.pre_init(sample_rate, channels = 1, buffer = 512)
     pygame.init()
-    pygame.mixer.set_num_channels(3)
-    pygame.mixer.set_reserved(2)
-    self.sounds_row = [pygame.sndarray.make_sound(self.sine_wave(self.dtmf_tones_row[x], 4096)) for x in range(4)]
-    self.sounds_col = [pygame.sndarray.make_sound(self.sine_wave(self.dtmf_tones_col[x], 4096)) for x in range(4)]
+    self.sounds = [[self.gen_dtmf_tone(y, x) for x in range(4)] for y in range(4)]
     app_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
 #    app_window.set_size_request(500, 350)
 #    app_window.set_border_width(10)
@@ -62,26 +68,23 @@ class DTMFDialer:
     app_window.show()
     return
 
-  def __del__(self): 
+  def __del__(self):
     pygame.mixer.quit()
 
   def button_pressed(self, widget, data):
+    pygame.mixer.Channel(0).play(self.sounds[data[2]][data[1]], -1)
     print("Button '%s' pressed." % data[0])
-    pygame.mixer.Channel(1).play(self.sounds_col[data[2]], -1)
-    pygame.mixer.Channel(0).play(self.sounds_row[data[1]], -1)
 
   def button_released(self, widget, data):
-    print("Button '%s' released." % data[0])
     pygame.mixer.Channel(0).stop()
-    pygame.mixer.Channel(1).stop()
+    print("Button '%s' released." % data[0])
 
-  def sine_wave(self, freq, gain, delay = tone_ms):
+  def sine_wave(self, freq, gain, samples = sample_rate):
     length = sample_rate / float(freq)
     omega = numpy.pi * 2 / length
-    xvalues = numpy.arange(int(length)) * omega
+    xvalues = numpy.arange(int(round(length))) * omega
     onecycle = gain * numpy.sin(xvalues)
-    n_samples = int(delay / float(1000) * sample_rate) / int(length) * int(length)
-    return numpy.resize(onecycle, (n_samples,)).astype(numpy.int16)
+    return numpy.resize(onecycle, (samples,)).astype(numpy.int16)
 
 def main():
   gtk.main()
