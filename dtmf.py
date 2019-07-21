@@ -23,7 +23,10 @@ class DTMFDialer:
     table.attach(button, col, col + 1, row, row + 1, gtk.EXPAND | gtk.FILL, gtk.EXPAND | gtk.FILL, 0, 0)
 
   def __init__(self):
-    pygame.mixer.init(sample_rate, channels = 1)
+    pygame.mixer.pre_init(sample_rate, channels = 1, buffer = 1024)
+    pygame.init()
+    pygame.mixer.set_num_channels(3)
+    pygame.mixer.set_reserved(2)
     self.sounds_row = [pygame.sndarray.make_sound(self.sine_wave(self.dtmf_tones_row[x], 4096)) for x in range(4)]
     self.sounds_col = [pygame.sndarray.make_sound(self.sine_wave(self.dtmf_tones_col[x], 4096)) for x in range(4)]
     app_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
@@ -59,19 +62,21 @@ class DTMFDialer:
     app_window.show()
     return
 
+  def __del__(self): 
+    pygame.mixer.quit()
+
   def button_pressed(self, widget, data):
     print("Button '%s' pressed." % data[0])
-    self.sounds_row[data[1]].play(-1)
-    self.sounds_col[data[2]].play(-1)
+    pygame.mixer.Channel(1).play(self.sounds_col[data[2]], -1)
+    pygame.mixer.Channel(0).play(self.sounds_row[data[1]], -1)
 
   def button_released(self, widget, data):
     print("Button '%s' released." % data[0])
-    self.sounds_row[data[1]].stop()
-    self.sounds_col[data[2]].stop()
+    pygame.mixer.Channel(0).stop()
+    pygame.mixer.Channel(1).stop()
 
   def sine_wave(self, freq, gain, delay = tone_ms):
     length = sample_rate / float(freq)
-    print("freq: %f, len: %d" % (freq, length))
     omega = numpy.pi * 2 / length
     xvalues = numpy.arange(int(length)) * omega
     onecycle = gain * numpy.sin(xvalues)
