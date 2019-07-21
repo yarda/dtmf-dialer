@@ -8,8 +8,9 @@ import pygame, pygame.sndarray
 import numpy
 
 sample_rate = 44100
+tone_ms = 200
 
-class MyProgram:
+class DTMFDialer:
   dtmf_tones_row = (1209, 1336, 1477, 1633)
   dtmf_tones_col = (697, 770, 852, 941)
 
@@ -31,7 +32,7 @@ class MyProgram:
     app_window.set_title("DTMF dialer")
     app_window.connect("delete_event", lambda w,e: gtk.main_quit())
 
-    table_layout = gtk.Table(rows=4, columns=4, homogeneous=True)
+    table_layout = gtk.Table(rows = 4, columns = 4, homogeneous = True)
 
     self.add_button(table_layout, "1", 0, 0)
     self.add_button(table_layout, "2", 1, 0)
@@ -68,18 +69,19 @@ class MyProgram:
     self.sounds_row[data[1]].stop()
     self.sounds_col[data[2]].stop()
 
-  def sine_wave(self, freq, gain):
+  def sine_wave(self, freq, gain, delay = tone_ms):
     length = sample_rate / float(freq)
+    print("freq: %f, len: %d" % (freq, length))
     omega = numpy.pi * 2 / length
     xvalues = numpy.arange(int(length)) * omega
     onecycle = gain * numpy.sin(xvalues)
-#    return numpy.resize(onecycle, (n_samples,)).astype(numpy.int16)
-    return onecycle.astype(numpy.int16)
+    n_samples = int(delay / float(1000) * sample_rate) / int(length) * int(length)
+    return numpy.resize(onecycle, (n_samples,)).astype(numpy.int16)
 
 def main():
   gtk.main()
   return 0
 
 if __name__ == "__main__":
-  MyProgram()
+  DTMFDialer()
   main()
