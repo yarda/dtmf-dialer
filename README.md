@@ -3,7 +3,7 @@ Description:
 
 This is an simple DTMF dialer written in Python 2 and GTK2. It was originally
 written for the Nokia n900, but it should work everywhere where the
-dependency is met.
+dependencies are met.
 
 
 Requirements:
