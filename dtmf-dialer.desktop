@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=DTMF dialer
+GenericName=dtmf-dialer
+Comment=Simple DTMF dialer
+Exec=dtmf-dialer.py
+Icon=dtmf-dialer
+Terminal=false
+Type=Application
+Categories=AudioVideo;Audio;Utility;
+Version=1.0
