@@ -23,7 +23,7 @@ import gtk
 import pygame, pygame.sndarray
 import numpy
 
-sample_rate = 44100
+sample_rate = 16000
 
 class DTMFDialer:
   dtmf_tones_row = [1209, 1336, 1477, 1633]
@@ -48,7 +48,7 @@ class DTMFDialer:
     return pygame.sndarray.make_sound((s1 + s2) / 2)
 
   def __init__(self):
-    pygame.mixer.pre_init(sample_rate, channels = 1, buffer = 512)
+    pygame.mixer.pre_init(sample_rate, channels = 1, buffer = 256)
     pygame.init()
     self.sounds = [[self.gen_dtmf_tone(y, x) for x in range(4)] for y in range(4)]
     app_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
