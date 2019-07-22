@@ -1,6 +1,9 @@
 Main author:
 Jaroslav Škarvada <jskarvad@redhat.com>
 
+Sine wave generator code taken from:
+https://github.com/akkana/scripts/blob/master/play_chord.py
+
 dtmf-dialer.svg:
 Obtained from wikipedia: 
 https://en.wikipedia.org/wiki/File:DTMF_keypad_layout.svg
